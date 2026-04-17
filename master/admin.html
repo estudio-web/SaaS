@@ -1,0 +1,966 @@
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Master Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #080c14;
+    --surface: #0e1521;
+    --surface2: #141e2e;
+    --surface3: #1a2540;
+    --border: #1f2d45;
+    --border2: #2a3d5a;
+    --text: #e8edf5;
+    --text2: #8a99b3;
+    --text3: #4a5a75;
+    --accent: #3b82f6;
+    --accent2: #1d4ed8;
+    --green: #22c55e;
+    --green-dim: #15803d22;
+    --amber: #f59e0b;
+    --amber-dim: #92400e22;
+    --red: #ef4444;
+    --red-dim: #7f1d1d22;
+    --radius: 10px;
+    --radius-lg: 14px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    height: 60px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+
+  .topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .brand-icon {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .brand-icon svg { width: 16px; height: 16px; fill: #fff; }
+
+  .brand-name {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    color: var(--text);
+  }
+
+  .brand-badge {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 8px;
+    background: var(--accent2);
+    color: #93c5fd;
+    border-radius: 99px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .topbar-user {
+    font-size: 13px;
+    color: var(--text2);
+  }
+
+  .btn-logout {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 7px 14px;
+    background: transparent;
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all .15s;
+  }
+
+  .btn-logout:hover {
+    background: var(--surface2);
+    color: var(--text);
+    border-color: var(--border2);
+  }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat-item {
+    background: var(--surface);
+    padding: 18px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text3);
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+  }
+
+  .stat-value {
+    font-size: 26px;
+    font-weight: 600;
+    font-family: 'DM Mono', monospace;
+    color: var(--text);
+    letter-spacing: -1px;
+  }
+
+  .stat-sub {
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  /* ── MAIN ── */
+  .main {
+    padding: 28px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .section-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text2);
+    letter-spacing: 0.2px;
+  }
+
+  .section-count {
+    font-size: 13px;
+    color: var(--text3);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .filter-tabs {
+    display: flex;
+    gap: 4px;
+  }
+
+  .filter-tab {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--text3);
+    cursor: pointer;
+    transition: all .15s;
+  }
+
+  .filter-tab.active, .filter-tab:hover {
+    background: var(--surface3);
+    color: var(--text);
+  }
+
+  /* ── GRID ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 12px;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+    transition: border-color .2s, transform .15s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card:hover {
+    border-color: var(--border2);
+    transform: translateY(-1px);
+  }
+
+  .card-status-strip {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .card-avatar {
+    width: 38px; height: 38px;
+    border-radius: 9px;
+    background: var(--surface3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text2);
+    flex-shrink: 0;
+  }
+
+  .card-info {
+    flex: 1;
+    margin-left: 12px;
+  }
+
+  .card-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .card-email {
+    font-size: 12px;
+    color: var(--text3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .status-badge {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: 99px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .badge-green { background: var(--green-dim); color: var(--green); border: 1px solid #15803d44; }
+  .badge-amber { background: var(--amber-dim); color: var(--amber); border: 1px solid #92400e44; }
+  .badge-red   { background: var(--red-dim);   color: var(--red);   border: 1px solid #7f1d1d44; }
+  .badge-gray  { background: #1a2540; color: var(--text3); border: 1px solid var(--border); }
+
+  /* ── PROGRESS ── */
+  .progress-section {
+    margin-bottom: 14px;
+  }
+
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  .progress-label {
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  .progress-value {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text2);
+  }
+
+  .bar {
+    height: 4px;
+    background: var(--surface3);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width .4s ease;
+  }
+
+  /* ── CARD META ROW ── */
+  .card-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .meta-item {
+    background: var(--surface2);
+    border-radius: 7px;
+    padding: 8px 10px;
+  }
+
+  .meta-key {
+    font-size: 10px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 3px;
+  }
+
+  .meta-val {
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* ── CARD ACTIONS ── */
+  .card-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 7px 12px;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all .15s;
+    flex: 1;
+    text-align: center;
+  }
+
+  .btn-renew {
+    background: #14532d33;
+    color: var(--green);
+    border: 1px solid #15803d44;
+  }
+  .btn-renew:hover { background: #14532d55; }
+
+  .btn-disable {
+    background: #7f1d1d22;
+    color: var(--red);
+    border: 1px solid #7f1d1d44;
+  }
+  .btn-disable:hover { background: #7f1d1d44; }
+
+  .btn-enable {
+    background: #1e3a5f33;
+    color: #60a5fa;
+    border: 1px solid #1e3a5f66;
+  }
+  .btn-enable:hover { background: #1e3a5f55; }
+
+  /* ── LOGIN MODAL ── */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(4, 8, 16, 0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(8px);
+  }
+
+  .modal-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 36px 32px;
+    width: 90%;
+    max-width: 360px;
+    box-shadow: 0 40px 80px rgba(0,0,0,.6);
+  }
+
+  .modal-icon {
+    width: 48px; height: 48px;
+    background: var(--accent2);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .modal-icon svg { width: 22px; height: 22px; fill: #93c5fd; }
+
+  .modal-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+    letter-spacing: -0.4px;
+  }
+
+  .modal-sub {
+    font-size: 13px;
+    color: var(--text3);
+    margin-bottom: 28px;
+  }
+
+  .field {
+    margin-bottom: 14px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text2);
+    margin-bottom: 6px;
+  }
+
+  .field input {
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color .15s;
+  }
+
+  .field input:focus { border-color: var(--accent); }
+  .field input::placeholder { color: var(--text3); }
+
+  .btn-login {
+    width: 100%;
+    padding: 11px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 9px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background .15s, opacity .15s;
+    letter-spacing: -0.2px;
+  }
+
+  .btn-login:hover { background: #2563eb; }
+  .btn-login:active { opacity: .85; }
+
+  .login-error {
+    font-size: 12px;
+    color: var(--red);
+    margin-top: 10px;
+    display: none;
+  }
+
+  /* ── EMPTY STATE ── */
+  .empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text3);
+    font-size: 14px;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .main { padding: 16px; }
+    .grid { grid-template-columns: 1fr; }
+    .topbar { padding: 0 16px; }
+    .topbar-user { display: none; }
+    .stat-value { font-size: 22px; }
+  }
+
+  @media (max-width: 480px) {
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .stat-item { padding: 14px 16px; }
+  }
+
+  /* ── LOADING SKELETON ── */
+  .skeleton {
+    background: linear-gradient(90deg, var(--surface2) 25%, var(--surface3) 50%, var(--surface2) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 6px;
+  }
+
+  @keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* ── SEARCH BAR ── */
+  .search-wrap {
+    position: relative;
+    flex: 1;
+    max-width: 260px;
+  }
+  .search-wrap svg {
+    position: absolute;
+    left: 10px; top: 50%;
+    transform: translateY(-50%);
+    width: 14px; height: 14px;
+    fill: var(--text3);
+    pointer-events: none;
+  }
+  .search-input {
+    width: 100%;
+    padding: 6px 12px 6px 32px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .search-input:focus { border-color: var(--accent); }
+  .search-input::placeholder { color: var(--text3); }
+
+  /* ── CARD LINK ROW ── */
+  .card-link-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 7px 10px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .card-link-text {
+    flex: 1;
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .btn-icon {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 8px;
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    background: var(--surface3);
+    color: var(--text2);
+    cursor: pointer;
+    transition: all .15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .btn-icon:hover { background: var(--border2); color: var(--text); }
+
+  /* ── DETAIL MODAL ── */
+  .detail-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(4, 8, 16, 0.88);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+    backdrop-filter: blur(6px);
+  }
+  .detail-modal-backdrop.open { display: flex; }
+  .detail-modal-box {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 18px;
+    padding: 28px;
+    width: 90%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 40px 80px rgba(0,0,0,.6);
+  }
+  .detail-modal-box h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+    letter-spacing: -0.3px;
+  }
+  .detail-modal-box .dm-sub {
+    font-size: 12px;
+    color: var(--text3);
+    margin-bottom: 20px;
+  }
+  .dm-section {
+    margin-bottom: 18px;
+  }
+  .dm-section-title {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .dm-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .dm-field {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .dm-field.full { grid-column: 1 / -1; }
+  .dm-field label {
+    display: block;
+    font-size: 10px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 5px;
+  }
+  .dm-field input, .dm-field select {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border2);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    outline: none;
+    padding: 2px 0 4px;
+    transition: border-color .15s;
+  }
+  .dm-field input:focus, .dm-field select:focus { border-color: var(--accent); }
+  .dm-field input[readonly] { color: var(--text3); cursor: default; }
+  .dm-field select { font-family: 'DM Sans', sans-serif; }
+  .dm-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+  }
+  .btn-dm-save {
+    flex: 1;
+    padding: 9px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .btn-dm-save:hover { background: #2563eb; }
+  .btn-dm-cancel {
+    padding: 9px 16px;
+    background: transparent;
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .btn-dm-cancel:hover { background: var(--surface2); color: var(--text); }
+
+  /* ── LINK MODAL ── */
+  .link-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(4, 8, 16, 0.88);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+    backdrop-filter: blur(6px);
+  }
+  .link-modal-backdrop.open { display: flex; }
+  .link-modal-box {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 18px;
+    padding: 28px;
+    width: 90%;
+    max-width: 420px;
+    box-shadow: 0 40px 80px rgba(0,0,0,.6);
+    text-align: center;
+  }
+  .link-modal-box h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .link-modal-box .lm-sub {
+    font-size: 12px;
+    color: var(--text3);
+    margin-bottom: 20px;
+  }
+  .lm-url-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .lm-url-input {
+    flex: 1;
+    padding: 9px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text2);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    outline: none;
+  }
+  .lm-qr {
+    display: flex;
+    justify-content: center;
+    margin: 12px 0 18px;
+  }
+  .lm-qr img { border-radius: 10px; border: 1px solid var(--border2); }
+  .lm-btns {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .lm-btns .btn-icon {
+    flex: 1;
+    padding: 8px 10px;
+    font-size: 12px;
+    text-align: center;
+  }
+
+  /* ── TOAST ── */
+  #masterToast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--surface3);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-size: 13px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.4);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity .25s, transform .25s;
+    pointer-events: none;
+    z-index: 9999;
+  }
+  #masterToast.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-brand">
+    <div class="brand-icon">
+      <svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+    </div>
+    <span class="brand-name">Master Admin</span>
+    <span class="brand-badge">Panel</span>
+  </div>
+  <div class="topbar-right">
+    <span class="topbar-user" id="userEmail"></span>
+    <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
+  </div>
+</header>
+
+<!-- STATS BAR -->
+<div class="stats-bar" id="statsBar">
+  <div class="stat-item">
+    <span class="stat-label">Total admins</span>
+    <span class="stat-value" id="statTotal">—</span>
+    <span class="stat-sub">registrados</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-label">Activos</span>
+    <span class="stat-value" id="statActive" style="color:var(--green)">—</span>
+    <span class="stat-sub">en uso</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-label">Por vencer</span>
+    <span class="stat-value" id="statSoon" style="color:var(--amber)">—</span>
+    <span class="stat-sub">próximos 5 días</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-label">Vencidos</span>
+    <span class="stat-value" id="statExp" style="color:var(--red)">—</span>
+    <span class="stat-sub">requieren acción</span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="section-header">
+    <span class="section-title">Administradores</span>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        <input class="search-input" id="searchInput" type="text" placeholder="Buscar negocio..." oninput="renderGrid()">
+      </div>
+      <span class="section-count" id="gridCount"></span>
+      <div class="filter-tabs">
+        <button class="filter-tab active" onclick="setFilter('todos',this)">Todos</button>
+        <button class="filter-tab" onclick="setFilter('activos',this)">Activos</button>
+        <button class="filter-tab" onclick="setFilter('vencidos',this)">Vencidos</button>
+      </div>
+    </div>
+  </div>
+  <div id="grid" class="grid"></div>
+</main>
+
+<!-- DETAIL / EDIT MODAL -->
+<div id="detailModal" class="detail-modal-backdrop">
+  <div class="detail-modal-box">
+    <h3 id="dm-title">Detalle del negocio</h3>
+    <div class="dm-sub" id="dm-id"></div>
+
+    <div class="dm-section">
+      <div class="dm-section-title">Información general</div>
+      <div class="dm-grid">
+        <div class="dm-field">
+          <label>Nombre</label>
+          <input type="text" id="dm-nombre" />
+        </div>
+        <div class="dm-field">
+          <label>Email</label>
+          <input type="email" id="dm-email" />
+        </div>
+        <div class="dm-field">
+          <label>Teléfono</label>
+          <input type="text" id="dm-telefono" />
+        </div>
+        <div class="dm-field">
+          <label>Dirección</label>
+          <input type="text" id="dm-direccion" />
+        </div>
+        <div class="dm-field">
+          <label>Plan</label>
+          <select id="dm-plan">
+            <option value="Estándar">Estándar</option>
+            <option value="Pro">Pro</option>
+            <option value="Premium">Premium</option>
+          </select>
+        </div>
+        <div class="dm-field">
+          <label>Rubro</label>
+          <input type="text" id="dm-rubro" placeholder="ej: panadería" />
+        </div>
+        <div class="dm-field full">
+          <label>Owner ID (Firebase UID)</label>
+          <input type="text" id="dm-ownerid" readonly />
+        </div>
+      </div>
+    </div>
+
+    <div class="dm-section">
+      <div class="dm-section-title">Link de tienda</div>
+      <div class="dm-grid">
+        <div class="dm-field full">
+          <label>URL pública</label>
+          <input type="text" id="dm-storeurl" readonly />
+        </div>
+      </div>
+    </div>
+
+    <div class="dm-actions">
+      <button class="btn-dm-cancel" onclick="closeDetailModal()">Cancelar</button>
+      <button class="btn-dm-save" onclick="saveDetail()">💾 Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<!-- LINK MODAL -->
+<div id="linkModal" class="link-modal-backdrop">
+  <div class="link-modal-box">
+    <h3 id="lm-nombre">Tienda</h3>
+    <div class="lm-sub">Compartí este enlace con tus clientes</div>
+    <div class="lm-url-row">
+      <input class="lm-url-input" id="lm-url" readonly />
+      <button class="btn-icon" onclick="copyLinkModal()">📋 Copiar</button>
+    </div>
+    <div class="lm-qr" id="lm-qr"></div>
+    <div class="lm-btns">
+      <button class="btn-icon" onclick="openLinkModal()">↗ Abrir</button>
+      <button class="btn-icon" onclick="shareLinkWhatsapp()">📱 WhatsApp</button>
+      <button class="btn-icon" onclick="closeLinkModal()">✕ Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="masterToast"></div>
+
+<!-- LOGIN MODAL -->
+<div id="loginModal" class="modal-backdrop">
+  <div class="modal-box">
+    <div class="modal-icon">
+      <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+    </div>
+    <div class="modal-title">Acceso restringido</div>
+    <div class="modal-sub">Ingresá tus credenciales de administrador</div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="admin@empresa.com" autocomplete="email">
+    </div>
+    <div class="field">
+      <label>Contraseña</label>
+      <input type="password" id="pass" placeholder="••••••••" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter') login()">
+    </div>
+    <button class="btn-login" onclick="login()">Ingresar al panel</button>
+    <div class="login-error" id="loginError">Credenciales incorrectas. Intentá de nuevo.</div>
+  </div>
+</div>
+
+<script type="module" src="config.js"></script>
+</body>
+</html>
