@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Pedidos online" />
+  <title>Tienda Online</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ── Loader ──────────────────────────────────────────────── -->
+<div id="global-loader" role="status" aria-label="Cargando">
+  <div class="loader-ring"></div>
+  <div class="loader-text">Cargando productos...</div>
+</div>
+
+<!-- ── Toast container ─────────────────────────────────────── -->
+<div id="toast-container" aria-live="polite"></div>
+
+<!-- ── Modal Promo ─────────────────────────────────────────── -->
+<div id="promo-modal" class="hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal-box">
+    <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">✕</button>
+    <div class="modal-emoji">🎉</div>
+    <h2 class="modal-title" id="modal-title">¡Promoción especial!</h2>
+    <p class="modal-desc" id="modal-desc">Cargando promoción...</p>
+    <button class="btn-modal" id="modal-cta">¡Ver productos!</button>
+  </div>
+</div>
+
+<!-- ── Header ──────────────────────────────────────────────── -->
+<header id="site-header">
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-icon">🏪</div>
+      <div>
+        <div class="brand-name" id="header-name">Cargando...</div>
+        <div class="brand-tagline">Pedidos online</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a href="../admin/login.html" class="header-admin-link">Admin</a>
+    </div>
+  </div>
+</header>
+
+<!-- ── Promo Banner ─────────────────────────────────────────── -->
+<div id="promo-banner" class="hidden">
+  <p class="promo-text" id="promo-title"></p>
+  <p class="promo-desc" id="promo-subdesc"></p>
+  <button id="promo-close" aria-label="Cerrar promoción">✕</button>
+</div>
+
+<!-- ── Hero ─────────────────────────────────────────────────── -->
+<div class="hero-section">
+  <!-- .hero-overlay se inyecta por JS si hay imagen de fondo -->
+  <div class="hero-inner">
+    <div class="hero-eyebrow">✦ Hecho con amor cada día</div>
+    <h1 class="hero-title">Tu tienda,<br><em>online y simple</em></h1>
+    <p class="hero-subtitle">Elegí tus productos favoritos y hacemos el pedido por WhatsApp en segundos.</p>
+  </div>
+</div>
+
+<!-- ── Main ─────────────────────────────────────────────────── -->
+<main>
+
+  <!-- Búsqueda y categorías -->
+  <section class="search-section" aria-label="Buscar y filtrar">
+    <div class="search-wrap">
+      <span class="icon" aria-hidden="true">🔍</span>
+      <input
+        type="search"
+        id="search-input"
+        placeholder="Buscar productos..."
+        autocomplete="off"
+        aria-label="Buscar productos"
+      />
+    </div>
+    <!-- Los botones de categoría se generan dinámicamente desde JS -->
+    <!-- Si el negocio no tiene categorías configuradas, se muestran estos por defecto -->
+    <div class="category-filters" role="group" aria-label="Filtrar por categoría">
+      <button class="cat-btn active" data-cat="all">Todos</button>
+    </div>
+  </section>
+
+  <!-- Productos -->
+  <section id="products-section">
+    <h2>Nuestros Productos</h2>
+    <p class="section-subtitle">Seleccioná lo que querés pedir y armamos tu pedido al instante.</p>
+    <div id="products-grid" aria-live="polite"></div>
+  </section>
+
+  <div style="height: 2rem;"></div>
+
+  <!-- Resumen del carrito -->
+  <div id="cart-summary" class="hidden" aria-live="polite">
+    <div>
+      <div class="cart-items-title">🛒 Tu selección</div>
+      <div class="cart-items-list" id="cart-items-list"></div>
+    </div>
+    <button class="cart-clear-btn" id="btn-clear-cart">✕ Limpiar</button>
+  </div>
+
+  <!-- CTA vacío -->
+  <div id="order-cta">
+    <div class="cta-icon">👆</div>
+    <div class="cta-title">Seleccioná un producto para pedir</div>
+    <div class="cta-desc">Hacé clic en "Pedir" en cualquier producto<br>y el formulario aparecerá aquí automáticamente.</div>
+  </div>
+
+  <!-- Formulario de Pedido -->
+  <section id="order-section" aria-labelledby="order-title">
+    <div class="order-header">
+      <h2 id="order-title">📋 Completá tu pedido</h2>
+      <p class="order-subtitle">Completá tus datos y te contactamos por WhatsApp.</p>
+    </div>
+
+    <form id="order-form" novalidate>
+      <div class="form-grid">
+
+        <div class="form-group" id="fg-nombre">
+          <label for="f-nombre">Nombre completo *</label>
+          <input type="text" id="f-nombre" placeholder="María García" autocomplete="name" />
+          <span class="error-msg">Por favor ingresá tu nombre completo.</span>
+        </div>
+
+        <div class="form-group" id="fg-tel">
+          <label for="f-tel">Teléfono / WhatsApp *</label>
+          <input type="tel" id="f-tel" placeholder="+54 9 11 2345-6789" autocomplete="tel" />
+          <span class="error-msg">Ingresá un número de teléfono válido.</span>
+        </div>
+
+        <div class="form-group full" id="fg-dir">
+          <label for="f-dir">Dirección de entrega *</label>
+          <input type="text" id="f-dir" placeholder="Av. Rivadavia 1234, CABA" autocomplete="street-address" />
+          <span class="error-msg">Por favor ingresá tu dirección.</span>
+        </div>
+
+        <div class="form-group full" id="fg-pedido">
+          <label for="f-pedido">Detalle del pedido *</label>
+          <textarea id="f-pedido" rows="4"
+            placeholder="Ej: 1 docena de medialunas, 1 pan lactal grande..."></textarea>
+          <span class="error-msg">Describí qué querés pedir.</span>
+        </div>
+
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary" id="btn-enviar">
+          <span id="btn-text">📲 Enviar por WhatsApp</span>
+          <span id="btn-loading" class="hidden">Enviando...</span>
+        </button>
+        <button type="button" class="btn-secondary" id="btn-repetir">
+          🔁 Repetir último pedido
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <!-- Info negocio -->
+  <div id="negocio-info">
+    <span id="info-tel"></span>
+    <span id="info-dir"></span>
+  </div>
+
+</main>
+
+<footer>
+  <p>Powered by <strong>IGW</strong> — © <span id="year"></span></p>
+</footer>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
