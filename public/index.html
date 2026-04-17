@@ -172,6 +172,27 @@
   <p>Powered by <strong>IGW</strong> — © <span id="year"></span></p>
 </footer>
 
+<!-- ── Modal Detalle Producto ──────────────────────────────── -->
+<div id="modal-producto" class="hidden" role="dialog" aria-modal="true" aria-labelledby="mp-nombre">
+  <div class="mp-overlay" id="mp-overlay"></div>
+  <div class="mp-box">
+    <button class="mp-close" id="mp-close" aria-label="Cerrar">✕</button>
+    <div class="mp-img-wrap">
+      <img id="mp-imagen" src="" alt="" />
+      <span class="mp-badge" id="mp-badge"></span>
+    </div>
+    <div class="mp-body">
+      <span class="mp-category" id="mp-category"></span>
+      <h2 class="mp-nombre" id="mp-nombre"></h2>
+      <p class="mp-desc" id="mp-desc"></p>
+      <div class="mp-footer">
+        <span class="mp-price" id="mp-price"></span>
+        <button class="btn-pedido mp-btn-pedir" id="mp-btn-pedir">Pedir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script type="module" src="app.js"></script>
 </body>
 </html>
