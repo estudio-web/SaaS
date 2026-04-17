@@ -302,6 +302,7 @@ function applyFilters() {
 }
 
 // ── Render productos ───────────────────────────────────────── //
+// ── Render productos ───────────────────────────────────────── //
 function renderProductos() {
   const grid = $('#products-grid');
   if (!grid) return;
@@ -333,19 +334,30 @@ function renderProductos() {
     const badgeText  = p.disponible !== false ? '✅ Disponible' : '❌ Sin stock';
     const btnText    = enCarrito ? 'Agregado ✓' : 'Pedir';
 
+    // ── Descripción truncada ──
+    const descFull   = p.descripcion || '';
+    const descCorta  = descFull.length > 75
+      ? descFull.slice(0, 75).trimEnd() + '…'
+      : descFull;
+    const tieneVerMas = descFull.length > 75;
+
     card.innerHTML = `
-      <div class="product-img-wrap">
+      <div class="product-img-wrap product-img-clickable">
         <img
           src="${p.imagen || 'https://placehold.co/400x300/F5ECD8/6B4226?text=🍞'}"
           alt="${p.nombre}"
           loading="lazy"
         />
         <span class="stock-badge ${badgeClass}">${badgeText}</span>
+        <span class="img-zoom-hint">🔍 Ver detalle</span>
       </div>
       <div class="product-info">
         <span class="product-category">${p.categoria || ''}</span>
         <h3 class="product-name">${p.nombre}</h3>
-        <p class="product-desc">${p.descripcion || ''}</p>
+        <p class="product-desc">
+          ${descCorta}
+          ${tieneVerMas ? `<button class="btn-ver-mas" data-id="${p.id}">ver más</button>` : ''}
+        </p>
         <div class="product-footer">
           <span class="product-price">${precio}</span>
           <button
@@ -356,6 +368,13 @@ function renderProductos() {
           >${p.disponible !== false ? btnText : 'Sin stock'}</button>
         </div>
       </div>`;
+
+    // Click en imagen o "ver más" → abrir modal
+    card.querySelector('.product-img-clickable')?.addEventListener('click', () => openProductModal(p));
+    card.querySelector('.btn-ver-mas')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openProductModal(p);
+    });
 
     card.querySelector('.btn-pedido')?.addEventListener('click', () => {
       if (p.disponible !== false) prefillOrder(p);
@@ -559,6 +578,52 @@ function debounce(fn, delay = 300) {
   };
 }
 
+// ── Modal detalle producto ─────────────────────────────────── //
+function openProductModal(p) {
+  const modal   = $('#modal-producto');
+  if (!modal) return;
+
+  const precio = typeof p.precio === 'number'
+    ? `$${p.precio.toLocaleString('es-AR')}`
+    : p.precio || '';
+
+  $('#mp-imagen').src        = p.imagen || 'https://placehold.co/600x450/F5ECD8/6B4226?text=🍞';
+  $('#mp-imagen').alt        = p.nombre;
+  $('#mp-nombre').textContent = p.nombre;
+  $('#mp-category').textContent = p.categoria || '';
+  $('#mp-desc').textContent   = p.descripcion || '';
+  $('#mp-price').textContent  = precio;
+
+  const badge = $('#mp-badge');
+  if (badge) {
+    badge.textContent  = p.disponible !== false ? '✅ Disponible' : '❌ Sin stock';
+    badge.className    = `mp-badge ${p.disponible !== false ? 'available' : 'unavailable'}`;
+  }
+
+  const btnPedir = $('#mp-btn-pedir');
+  if (btnPedir) {
+    const enCarrito = state.carrito.some(c => c.id === p.id);
+    btnPedir.textContent = enCarrito ? 'Agregado ✓' : 'Pedir';
+    btnPedir.disabled    = p.disponible === false;
+    btnPedir.onclick = () => {
+      if (p.disponible !== false) {
+        prefillOrder(p);
+        closeProductModal();
+      }
+    };
+  }
+
+  modal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeProductModal() {
+  const modal = $('#modal-producto');
+  if (!modal) return;
+  modal.classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
 // ── Event Listeners ────────────────────────────────────────── //
 function setupListeners() {
   $('#search-input')?.addEventListener('input', debounce(e => {
@@ -582,6 +647,13 @@ function setupListeners() {
 
   const yearEl = $('#year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+  // Modal producto
+  $('#mp-close')?.addEventListener('click', closeProductModal);
+  $('#mp-overlay')?.addEventListener('click', closeProductModal);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeProductModal();
+  });
 }
 
 // ── Bootstrap ──────────────────────────────────────────────── //
