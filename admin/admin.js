@@ -930,77 +930,77 @@ if (PAGE_IS_DASH) {
     };
   }
 
-  // ── Preview completo de la tienda (iframe) ─────────────── //
-  function buildStoreURL() {
-    const slug = admin.negocio?.slug;
-    const base = window.location.origin +
-      window.location.pathname.replace(/admin\/.*$/, 'public/index.html');
-    return slug
-      ? `${window.location.origin}/tienda/${slug}`
-      : `${base}?n=${admin.negocioId}`;
-  }
+// ── Preview completo de la tienda (iframe) ─────────────── //
+function buildStoreURL() {
+  const base = window.location.origin +
+    window.location.pathname.replace(/admin\/.*$/, 'public/index.html');
+  // ❌ Slug desactivado hasta tener routing real en el servidor
+  // const slug = admin.negocio?.slug;
+  // return slug ? `${window.location.origin}/tienda/${slug}` : `${base}?n=${admin.negocioId}`;
+  return `${base}?n=${admin.negocioId}`;
+}
 
-  function openStorePreview() {
-    const modal  = $('#modal-preview');
-    const iframe = $('#iframe-tienda');
-    if (!modal || !iframe) return;
-    iframe.src = buildStoreURL();
+function openStorePreview() {
+  const modal  = $('#modal-preview');
+  const iframe = $('#iframe-tienda');
+  if (!modal || !iframe) return;
+  iframe.src = buildStoreURL();
+  modal.classList.remove('hidden');
+}
+
+function closeStorePreview() {
+  const modal  = $('#modal-preview');
+  const iframe = $('#iframe-tienda');
+  if (!modal) return;
+  modal.classList.add('hidden');
+  // Limpiar src para liberar memoria
+  if (iframe) setTimeout(() => { iframe.src = ''; }, 300);
+}
+
+// Recarga el iframe si el modal de preview está abierto
+function refreshStorePreview() {
+  const modal  = $('#modal-preview');
+  const iframe = $('#iframe-tienda');
+  if (!modal || modal.classList.contains('hidden') || !iframe) return;
+  iframe.src = buildStoreURL();
+}
+
+// ── Compartir tienda ───────────────────────────────────── //
+function setupShareModal() {
+  const modal = $('#modal-share');
+  const input = $('#share-link');
+  const qrBox = $('#share-qr');
+  if (!modal) return;
+
+  const open = () => {
+    const url = buildStoreURL();
+    if (input) input.value = url;
+    if (qrBox) qrBox.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(url)}" alt="QR tienda" />`;
     modal.classList.remove('hidden');
-  }
+  };
+  const close = () => modal.classList.add('hidden');
 
-  function closeStorePreview() {
-    const modal  = $('#modal-preview');
-    const iframe = $('#iframe-tienda');
-    if (!modal) return;
-    modal.classList.add('hidden');
-    // Limpiar src para liberar memoria
-    if (iframe) setTimeout(() => { iframe.src = ''; }, 300);
-  }
+  $('#btn-share-store')?.addEventListener('click', open);
+  $('#overlay-share')?.addEventListener('click', close);
+  $('#btn-close-share')?.addEventListener('click', close);
 
-  // Recarga el iframe si el modal de preview está abierto
-  function refreshStorePreview() {
-    const modal  = $('#modal-preview');
-    const iframe = $('#iframe-tienda');
-    if (!modal || modal.classList.contains('hidden') || !iframe) return;
-    iframe.src = buildStoreURL();
-  }
+  $('#btn-copy-link')?.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(input.value);
+      showToast('Enlace copiado ✅', 'success');
+    } catch {
+      input?.select(); document.execCommand('copy');
+      showToast('Enlace copiado', 'success');
+    }
+  });
 
-  // ── Compartir tienda ───────────────────────────────────── //
-  function setupShareModal() {
-    const modal = $('#modal-share');
-    const input = $('#share-link');
-    const qrBox = $('#share-qr');
-    if (!modal) return;
+  $('#btn-share-open')?.addEventListener('click', () => window.open(input?.value, '_blank'));
 
-    const open = () => {
-      const url = buildStoreURL();
-      if (input) input.value = url;
-      if (qrBox) qrBox.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(url)}" alt="QR tienda" />`;
-      modal.classList.remove('hidden');
-    };
-    const close = () => modal.classList.add('hidden');
-
-    $('#btn-share-store')?.addEventListener('click', open);
-    $('#overlay-share')?.addEventListener('click', close);
-    $('#btn-close-share')?.addEventListener('click', close);
-
-    $('#btn-copy-link')?.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(input.value);
-        showToast('Enlace copiado ✅', 'success');
-      } catch {
-        input?.select(); document.execCommand('copy');
-        showToast('Enlace copiado', 'success');
-      }
-    });
-
-    $('#btn-share-open')?.addEventListener('click', () => window.open(input?.value, '_blank'));
-
-    $('#btn-share-whatsapp')?.addEventListener('click', () => {
-      const nombre = admin.negocio?.nombre || 'nuestra tienda';
-      const msg = `¡Hola! 👋 Hacé tus pedidos en ${nombre} desde acá: ${input?.value}`;
-      window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
-    });
-  }
+  $('#btn-share-whatsapp')?.addEventListener('click', () => {
+    const nombre = admin.negocio?.nombre || 'nuestra tienda';
+    const msg = `¡Hola! 👋 Hacé tus pedidos en ${nombre} desde acá: ${input?.value}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+  });
+}
 
 } // end if PAGE_IS_DASH
