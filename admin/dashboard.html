@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body class="dash-body">
+
+<div id="toast-container" aria-live="polite"></div>
+
+<!-- ── Loader ──────────────────────────────────────────────── -->
+<div id="global-loader">
+  <div class="loader-ring"></div>
+</div>
+
+<!-- ── Sidebar ─────────────────────────────────────────────── -->
+<nav id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo" id="sidebar-logo">🏪</div>
+    <div>
+      <div class="sidebar-title" id="sidebar-negocio-name">Mi Negocio</div>
+      <div class="sidebar-sub">Panel de administración</div>
+    </div>
+  </div>
+  <ul class="sidebar-nav">
+    <li><a href="#" class="nav-link active" data-section="dashboard">📊 Dashboard</a></li>
+    <li><a href="#" class="nav-link" data-section="productos">🛍 Productos</a></li>
+    <li><a href="#" class="nav-link" data-section="pedidos">📦 Pedidos</a></li>
+    <li><a href="#" class="nav-link" data-section="promociones">📢 Promociones</a></li>
+    <li><a href="#" class="nav-link" data-section="configuracion">⚙️ Configuración</a></li>
+  </ul>
+  <div class="sidebar-footer">
+    <button id="btn-logout" class="btn-logout">🚪 Cerrar sesión</button>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════════════════════════════
+     MODALES — fuera de #main-wrapper para que position:fixed
+     funcione correctamente sin herencia de transform/overflow
+     ════════════════════════════════════════════════════════════ -->
+
+<!-- Modal: Compartir tienda -->
+<div id="modal-share" class="modal-fullscreen hidden">
+  <div class="modal-overlay" id="overlay-share"></div>
+  <div class="modal-content" style="max-width:480px">
+    <h2>🔗 Compartir tu tienda</h2>
+    <p style="font-size:.85rem;color:var(--brown-light);margin-bottom:.8rem">
+      Enviá este enlace a tus clientes para que hagan pedidos online.
+    </p>
+    <div class="form-group">
+      <label>Enlace público</label>
+      <div style="display:flex;gap:.4rem">
+        <input type="text" id="share-link" readonly style="flex:1" />
+        <button type="button" class="btn-save" id="btn-copy-link" style="padding:.5rem .8rem">📋</button>
+      </div>
+    </div>
+    <div id="share-qr" style="display:flex;justify-content:center;margin:1rem 0"></div>
+    <div class="modal-actions" style="flex-wrap:wrap;gap:.5rem">
+      <button type="button" class="btn-cancel" id="btn-share-whatsapp">📱 WhatsApp</button>
+      <button type="button" class="btn-cancel" id="btn-share-open">↗ Abrir tienda</button>
+      <button type="button" class="btn-save"   id="btn-close-share">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Preview completo de la tienda (iframe) -->
+<div id="modal-preview" class="modal-fullscreen hidden">
+  <div class="modal-overlay" id="overlay-preview"></div>
+  <div class="modal-preview-content">
+    <div class="modal-preview-header">
+      <span>👁 Vista previa de la tienda</span>
+      <div style="display:flex;gap:.5rem;align-items:center">
+        <span id="preview-url-label" style="font-size:.75rem;opacity:.6;font-family:monospace"></span>
+        <button type="button" class="btn-preview-open" id="btn-preview-open-tab">↗ Abrir</button>
+        <button type="button" class="btn-preview-close" id="btn-close-preview">✕ Cerrar</button>
+      </div>
+    </div>
+    <!-- Barra de dispositivos -->
+    <div class="preview-device-bar">
+      <button class="btn-device active" data-w="100%" data-label="🖥 Desktop">🖥 Desktop</button>
+      <button class="btn-device" data-w="768px" data-label="📱 Tablet">📱 Tablet</button>
+      <button class="btn-device" data-w="390px" data-label="📱 Mobile">📱 Mobile</button>
+    </div>
+    <div class="preview-iframe-wrap">
+      <iframe id="iframe-tienda" src="" title="Vista previa tienda" allowfullscreen></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- ── Main wrapper ─────────────────────────────────────────── -->
+<div id="main-wrapper">
+
+  <!-- Topbar -->
+  <header id="topbar">
+    <button id="menu-toggle" aria-label="Menú">☰</button>
+    <span id="topbar-title">Dashboard</span>
+    <div style="margin-left:auto;display:flex;gap:.5rem;align-items:center">
+      <button id="btn-share-store" class="btn-action" style="padding:.45rem .75rem;font-size:.8rem">
+        🔗 Compartir
+      </button>
+      <span id="topbar-user" style="font-size:.78rem;color:var(--brown-light)"></span>
+    </div>
+  </header>
+
+  <!-- ── SECCIÓN: Dashboard ─────────────────────────────────── -->
+  <section class="dash-section" id="section-dashboard">
+    <h1 class="section-title">Dashboard</h1>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-info">
+          <div class="stat-value" id="stat-pedidos-hoy">—</div>
+          <div class="stat-label">Pedidos hoy</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🛍</div>
+        <div class="stat-info">
+          <div class="stat-value" id="stat-productos">—</div>
+          <div class="stat-label">Productos activos</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-info">
+          <div class="stat-value" id="stat-pendientes">—</div>
+          <div class="stat-label">Pedidos pendientes</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📢</div>
+        <div class="stat-info">
+          <div class="stat-value" id="stat-promos">—</div>
+          <div class="stat-label">Promociones activas</div>
+        </div>
+      </div>
+    </div>
+    <div class="dash-quick">
+      <h2>Últimos 5 pedidos</h2>
+      <div id="recent-pedidos" class="table-wrap">
+        <p class="loading-msg">Cargando...</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SECCIÓN: Productos ─────────────────────────────────── -->
+  <section class="dash-section hidden" id="section-productos">
+    <div class="section-header">
+      <h1 class="section-title">Productos</h1>
+      <button class="btn-action" id="btn-nuevo-producto">+ Nuevo producto</button>
+    </div>
+
+    <!-- Modal producto -->
+    <div id="modal-producto" class="hidden">
+      <div class="modal-overlay" id="overlay-producto"></div>
+      <div class="modal-content">
+        <h2 id="modal-prod-title">Nuevo producto</h2>
+        <form id="form-producto" novalidate>
+          <div class="form-grid-2">
+
+            <div class="form-group">
+              <label>Nombre *</label>
+              <input type="text" id="prod-nombre" required />
+            </div>
+
+            <div class="form-group">
+              <label>Precio *</label>
+              <input type="number" id="prod-precio" min="0" step="0.01" required />
+            </div>
+
+            <div class="form-group">
+              <label>Categoría</label>
+              <!-- Se llena dinámicamente desde admin.js -->
+              <select id="prod-categoria"></select>
+            </div>
+
+            <div class="form-group">
+              <label>Variantes <small style="color:var(--brown-light)">(ej: S, M, L)</small></label>
+              <input type="text" id="prod-variantes" placeholder="Separadas por coma" />
+            </div>
+
+            <div class="form-group full">
+              <label>Imagen del producto</label>
+              <input type="file" id="prod-imagen-file" accept="image/*" />
+              <div id="img-upload-status" style="font-size:12px;margin-top:5px;color:var(--brown-light)"></div>
+            </div>
+
+            <div class="form-group full">
+              <label>Descripción</label>
+              <textarea id="prod-descripcion" rows="3"></textarea>
+            </div>
+
+            <div class="form-group full">
+              <label class="toggle-label">
+                <input type="checkbox" id="prod-disponible" checked />
+                <span>Disponible para pedir</span>
+              </label>
+            </div>
+
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-cancel" id="btn-cancel-prod">Cancelar</button>
+            <button type="submit" class="btn-save"   id="btn-save-prod">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="productos-lista" class="cards-grid">
+      <p class="loading-msg">Cargando productos...</p>
+    </div>
+  </section>
+
+  <!-- ── SECCIÓN: Pedidos ───────────────────────────────────── -->
+  <section class="dash-section hidden" id="section-pedidos">
+    <div class="section-header">
+      <h1 class="section-title">Pedidos</h1>
+      <div style="display:flex;gap:.5rem;align-items:center">
+        <label for="filtro-estado" style="font-size:.82rem;color:var(--brown-light)">Estado:</label>
+        <select id="filtro-estado" class="select-sm">
+          <option value="all">Todos</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="confirmado">Confirmado</option>
+          <option value="entregado">Entregado</option>
+          <option value="sin stock">Sin stock</option>
+        </select>
+      </div>
+    </div>
+    <div id="pedidos-lista" class="table-wrap">
+      <p class="loading-msg">Cargando pedidos...</p>
+    </div>
+  </section>
+
+  <!-- ── SECCIÓN: Promociones ──────────────────────────────── -->
+  <section class="dash-section hidden" id="section-promociones">
+    <div class="section-header">
+      <h1 class="section-title">Promociones</h1>
+      <button class="btn-action" id="btn-nueva-promo">+ Nueva promoción</button>
+    </div>
+
+    <!-- Modal promo -->
+    <div id="modal-promo" class="hidden">
+      <div class="modal-overlay" id="overlay-promo"></div>
+      <div class="modal-content" style="max-width:460px">
+        <h2 id="modal-promo-title">Nueva promoción</h2>
+        <form id="form-promo" novalidate>
+          <div class="form-group">
+            <label>Título *</label>
+            <input type="text" id="promo-titulo" required />
+          </div>
+          <div class="form-group">
+            <label>Descripción</label>
+            <textarea id="promo-descripcion" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="toggle-label">
+              <input type="checkbox" id="promo-activo" checked />
+              <span>Activa (visible en tienda)</span>
+            </label>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-cancel" id="btn-cancel-promo">Cancelar</button>
+            <button type="submit" class="btn-save"   id="btn-save-promo">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="promos-lista" class="cards-grid">
+      <p class="loading-msg">Cargando promociones...</p>
+    </div>
+  </section>
+
+  <!-- ── SECCIÓN: Configuración ────────────────────────────── -->
+  <section class="dash-section hidden" id="section-configuracion">
+    <div class="section-header">
+      <h1 class="section-title">⚙️ Configuración</h1>
+      <!-- Botón para abrir el preview completo de la tienda -->
+      <button type="button" class="btn-action" id="btn-preview-tienda"
+              style="display:flex;align-items:center;gap:.4rem">
+        👁 Vista previa de la tienda
+      </button>
+    </div>
+
+    <form id="form-config" novalidate>
+
+      <!-- ── Datos del negocio ──────────────────────────────── -->
+      <div class="config-card">
+        <h3>📋 Datos del negocio</h3>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>Nombre del negocio *</label>
+            <input type="text" id="config-nombre" required />
+          </div>
+          <div class="form-group">
+            <label>Teléfono / WhatsApp</label>
+            <input type="text" id="config-telefono" placeholder="Ej: 5491112345678" />
+          </div>
+          <div class="form-group full">
+            <label>Dirección</label>
+            <input type="text" id="config-direccion" placeholder="Ej: Av. Corrientes 1234, CABA" />
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Rubro: solo lectura ────────────────────────────── -->
+      <div class="config-card">
+        <h3>🏷️ Rubro</h3>
+        <p style="font-size:.85rem;color:var(--brown-light);margin-bottom:.6rem">
+          El rubro fue asignado por el administrador del sistema y no puede modificarse desde aquí.
+        </p>
+        <div id="config-rubro-display" class="rubro-badge">—</div>
+      </div>
+
+      <!-- ── Categorías ─────────────────────────────────────── -->
+      <div class="config-card">
+        <h3>🗂️ Categorías de productos</h3>
+        <p style="font-size:.85rem;color:var(--brown-light);margin-bottom:.75rem">
+          Estas categorías aparecerán al cargar un producto nuevo.
+        </p>
+        <div id="categorias-lista" class="categorias-lista"></div>
+        <div style="display:flex;gap:.5rem;margin-top:.75rem">
+          <input type="text" id="nueva-categoria" placeholder="Nueva categoría..." style="flex:1" />
+          <button type="button" class="btn-action" id="btn-add-categoria">+ Agregar</button>
+        </div>
+      </div>
+
+      <!-- ── Apariencia ─────────────────────────────────────── -->
+      <div class="config-card">
+        <h3>🎨 Apariencia de la tienda</h3>
+        <p style="font-size:.85rem;color:var(--brown-light);margin-bottom:1rem">
+          Personalizá cómo ven tu tienda los clientes. Los cambios se aplican al guardar.
+        </p>
+
+        <div class="form-grid-2">
+
+          <div class="form-group full">
+            <label>✦ Slogan (texto pequeño sobre el título)</label>
+            <input type="text" id="ap-slogan" placeholder="Ej: Hecho con amor cada día" maxlength="80" />
+          </div>
+
+          <div class="form-group">
+            <label>Título principal</label>
+            <input type="text" id="ap-titulo" placeholder="Ej: Pan artesanal" maxlength="60" />
+          </div>
+
+          <div class="form-group">
+            <label>Título — parte destacada <small style="color:var(--brown-light)">(cursiva)</small></label>
+            <input type="text" id="ap-titulo-em" placeholder="Ej: sabor de siempre" maxlength="60" />
+          </div>
+
+          <div class="form-group full">
+            <label>Subtítulo del hero</label>
+            <textarea id="ap-subtitulo" rows="2"
+              placeholder="Ej: Elegí tus productos favoritos y hacemos el pedido por WhatsApp en segundos."
+              maxlength="200"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Emoji / ícono de marca</label>
+            <input type="text" id="ap-emoji" placeholder="🍞" maxlength="4"
+                   style="font-size:1.5rem;width:80px;text-align:center" />
+          </div>
+
+          <div class="form-group">
+            <label>Color primario (botones, precios)</label>
+            <div style="display:flex;gap:.6rem;align-items:center">
+              <input type="color" id="ap-color-primario" value="#C8781A"
+                     style="width:48px;height:40px;border:none;border-radius:8px;cursor:pointer;padding:2px" />
+              <input type="text"  id="ap-color-primario-hex" placeholder="#C8781A"
+                     maxlength="7" style="flex:1;font-family:monospace" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Color de fondo del hero</label>
+            <div style="display:flex;gap:.6rem;align-items:center">
+              <input type="color" id="ap-color-hero" value="#2C1A0E"
+                     style="width:48px;height:40px;border:none;border-radius:8px;cursor:pointer;padding:2px" />
+              <input type="text"  id="ap-color-hero-hex" placeholder="#2C1A0E"
+                     maxlength="7" style="flex:1;font-family:monospace" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Color de fondo general</label>
+            <div style="display:flex;gap:.6rem;align-items:center">
+              <input type="color" id="ap-color-fondo" value="#FDF8F2"
+                     style="width:48px;height:40px;border:none;border-radius:8px;cursor:pointer;padding:2px" />
+              <input type="text"  id="ap-color-fondo-hex" placeholder="#FDF8F2"
+                     maxlength="7" style="flex:1;font-family:monospace" />
+            </div>
+          </div>
+
+          <div class="form-group full">
+            <label>🖼️ Imagen de fondo del hero
+              <small style="color:var(--brown-light)">(opcional — reemplaza el color)</small>
+            </label>
+            <input type="file" id="ap-bg-file" accept="image/*" />
+            <div id="ap-bg-status" style="font-size:.78rem;margin-top:.4rem;color:var(--brown-light)"></div>
+            <div id="ap-bg-preview"
+                 style="margin-top:.6rem;border-radius:10px;overflow:hidden;max-height:140px;display:none">
+              <img id="ap-bg-img" src="" alt="Preview fondo"
+                   style="width:100%;object-fit:cover;max-height:140px" />
+            </div>
+            <input type="text" id="ap-bg-url" placeholder="O pegá una URL de imagen..."
+                   style="margin-top:.5rem;font-size:.82rem" />
+          </div>
+
+          <div class="form-group full" id="ap-overlay-wrap" style="display:none">
+            <label>Oscuridad del overlay sobre la imagen:
+              <strong id="ap-overlay-val">40%</strong>
+            </label>
+            <input type="range" id="ap-overlay" min="0" max="80" value="40" step="5"
+                   style="width:100%;accent-color:var(--amber)" />
+          </div>
+
+        </div>
+
+        <!-- Mini-preview del hero en tiempo real -->
+        <div style="margin-top:1.25rem">
+          <label class="preview-label">Vista previa del hero</label>
+          <div id="ap-hero-preview" class="hero-preview-box">
+            <div id="ap-hero-overlay" class="hero-preview-overlay"></div>
+            <div style="position:relative;z-index:1">
+              <div id="prev-eyebrow" class="prev-eyebrow">✦ Hecho con amor cada día</div>
+              <div id="prev-titulo"  class="prev-titulo">
+                Pan artesanal, <em style="color:#F0A843">sabor de siempre</em>
+              </div>
+              <div id="prev-subtitulo" class="prev-subtitulo">
+                Elegí tus productos favoritos y hacemos el pedido por WhatsApp en segundos.
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /.config-card apariencia -->
+
+      <div style="margin-top:1.5rem;display:flex;gap:.75rem;flex-wrap:wrap;align-items:center">
+        <button type="submit" class="btn-save" id="btn-save-config">💾 Guardar cambios</button>
+        <button type="button" class="btn-cancel" id="btn-preview-tienda-2"
+                onclick="document.getElementById('btn-preview-tienda').click()">
+          👁 Ver tienda completa
+        </button>
+      </div>
+
+    </form>
+  </section>
+
+</div><!-- #main-wrapper -->
+
+<script type="module" src="admin.js"></script>
+</body>
+</html>
